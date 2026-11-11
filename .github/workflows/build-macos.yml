@@ -55,4 +55,61 @@ jobs:
     uses: actions/upload-artifact@v4
     with:
       name: Gutta-Radio-Ready-Mac
+      path: distname: Build Mac Plugin
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config Release -j 3
+
+      - name: Collect the finished plugins
+        run: |
+          mkdir -p dist
+          cp -R "build/DGUTTA_RadioReady_artefacts/Release/VST3/Gutta Radio Ready.vst3" dist/
+          cp -R "build/DGUTTA_RadioReady_artefacts/Release/AU/Gutta Radio Ready.component" dist/
+          ls -R dist
+
+      - name: Sign so the Mac lets it load
+        run: |
+          codesign --force --deep -s - "dist/Gutta Radio Ready.vst3" || true
+          codesign --force --deep -s - "dist/Gutta Radio Ready.component" || true
+
+      - name: Save the download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Gutta-Radio-Ready-Mac
+          path: dist  - name: Configure
+    run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+  - name: Build
+    run: cmake --build build --config Release -j 3
+
+  - name: Collect the finished plugins
+    run: |
+      mkdir -p dist
+      cp -R "build/DGUTTA_RadioReady_artefacts/Release/VST3/Gutta Radio Ready.vst3" dist/
+      cp -R "build/DGUTTA_RadioReady_artefacts/Release/AU/Gutta Radio Ready.component" dist/
+      ls -R dist
+
+  - name: Sign so the Mac lets it load
+    run: |
+      codesign --force --deep -s - "dist/Gutta Radio Ready.vst3" || true
+      codesign --force --deep -s - "dist/Gutta Radio Ready.component" || true
+
+  - name: Save the download
+    uses: actions/upload-artifact@v4
+    with:
+      name: Gutta-Radio-Ready-Mac
       path: dist
